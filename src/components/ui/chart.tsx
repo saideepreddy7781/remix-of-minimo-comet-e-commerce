@@ -15,11 +15,8 @@ import {
 
 // Import the correct types from Recharts
 // If you're using recharts >= 2.1, you can do:
-import type {
-  TooltipProps,
-  NameType,
-  ValueType,
-} from "recharts/types/component/DefaultTooltipContent";
+import type { TooltipProps, NameType, ValueType } from "recharts";
+
 // If you’re using an earlier/later version, the import path might differ.
 
 // Sample data type — adjust to your actual data
