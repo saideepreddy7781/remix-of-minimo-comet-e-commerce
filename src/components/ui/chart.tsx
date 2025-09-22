@@ -1,71 +1,118 @@
-"use client";
+// src/components/ui/chart.tsx
 
 import React from "react";
 import {
-  LineChart,
-  Line,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
-  Tooltip,
-  TooltipProps,
   CartesianGrid,
-  ResponsiveContainer,
+  Tooltip,
+  Legend,
+  LabelList,
 } from "recharts";
 
-// Custom tooltip content
-function ChartTooltipContent({
-  active,
-  payload,
-  className,
-  indicator = "dot",
-  hideLabel = false,
-}: TooltipProps<number, string> & {
-  className?: string;
-  indicator?: "dot" | "line";
-  hideLabel?: boolean;
-}) {
-  if (!active || !payload || payload.length === 0) return null;
+// Import the correct types from Recharts
+// If you're using recharts >= 2.1, you can do:
+import type {
+  TooltipProps,
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
+// If you’re using an earlier/later version, the import path might differ.
 
-  return (
-    <div className={className ?? "rounded-md border bg-white p-2 shadow"}>
-      {!hideLabel && <p className="font-semibold mb-1">Details</p>}
-      {payload.map((item, index) => (
-        <div key={index} className="flex items-center gap-2 text-sm">
-          {indicator === "dot" && (
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{ backgroundColor: item.color }}
-            />
-          )}
-          <span>{item.name}:</span>
-          <span className="font-medium">{item.value}</span>
-        </div>
-      ))}
-    </div>
-  );
+// Sample data type — adjust to your actual data
+interface DataPoint {
+  name: string;
+  value: number;
+  // Add any other fields your data has
 }
 
-// Example chart component
-export default function ChartDemo() {
-  const data = [
-    { name: "Jan", value: 40 },
-    { name: "Feb", value: 30 },
-    { name: "Mar", value: 20 },
-    { name: "Apr", value: 27 },
-    { name: "May", value: 18 },
-    { name: "Jun", value: 23 },
-    { name: "Jul", value: 34 },
-  ];
+interface ChartProps {
+  data: DataPoint[];
+}
 
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length > 0) {
+    // payload[0] has .value, .payload etc
+    const item = payload[0];
+    return (
+      <div
+        style={{
+          backgroundColor: "white",
+          border: "1px solid #ccc",
+          padding: "8px",
+        }}
+      >
+        <p style={{ margin: 0 }}>
+          <strong>{label}</strong>
+        </p>
+        <p style={{ margin: 0 }}>
+          Value: {item.value}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomLabel = ({
+  x,
+  y,
+  value,
+  index,
+  // If you need payload here: add it to the props
+  // payload is sometimes present in LabelList / CustomizedLabelProps
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  value?: string | number;
+  index?: number;
+  payload?: any;  // or a more specific type if you know it
+}) => {
+  // Example: you might need payload[index] etc.
+  return (
+    <text
+      x={x}
+      y={y}
+      dy={-6}
+      textAnchor="middle"
+      fill="#666"
+      fontSize="12"
+    >
+      {value}
+    </text>
+  );
+};
+
+const MyChart: React.FC<ChartProps> = ({ data }) => {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+      <BarChart
+        data={data}
+        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
-        <Tooltip content={<ChartTooltipContent />} />
-        <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
-      </LineChart>
+        <Tooltip content={<CustomTooltip />} />
+        <Legend />
+        <Bar dataKey="value" fill="#8884d8">
+          {/* If you want labels on bars */}
+          <LabelList
+            dataKey="value"
+            content={<CustomLabel />}
+          />
+        </Bar>
+      </BarChart>
     </ResponsiveContainer>
   );
-}
+};
+
+export default MyChart;
